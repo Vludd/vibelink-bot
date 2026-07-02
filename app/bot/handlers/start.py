@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.keyboards.inline.profile import kb_main_menu
 from app.bot.texts import ru as texts
+from app.bot.utils.messages import answer_new_message
 from app.services.profile_service import ProfileService
 
 router = Router(name="start")
@@ -30,7 +31,8 @@ async def cmd_start(message: Message, session: AsyncSession) -> None:
         telegram_username=message.from_user.username,
     )
 
-    await message.answer(
+    await answer_new_message(
+        message,
         texts.start_text(message.from_user.username),
         reply_markup=kb_main_menu(is_hidden=user.is_hidden),
     )

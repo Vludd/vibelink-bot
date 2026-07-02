@@ -234,34 +234,25 @@ INVALID_DESCRIPTION = (
 def profile_preview(profile: Mapping[str, Any]) -> str:
     name = value_or_dash(profile.get("name"))
     age = value_or_dash(profile.get("age"))
-    city = profile.get("city")
-    is_online = bool(profile.get("is_online", True))
-
-    location = "Онлайн"
-    if city and is_online:
-        location = f"{h(city)} / Онлайн"
-    elif city:
-        location = h(city)
+    city = value_or_dash(profile.get("city"))
+    search_scope = value_or_dash(profile.get("search_scope"))
+    gender = value_or_dash(profile.get("gender"))
 
     goals = join_items(profile.get("goals"))
     interests = join_items(profile.get("interests"))
-    communication_formats = join_items(profile.get("communication_formats"))
     description = value_or_dash(profile.get("description"))
-    looking_for = value_or_dash(profile.get("looking_for"))
 
     return (
         f"👤 <b>{name}, {age}</b>\n"
-        f"📍 {location}\n\n"
+        f"📍 <b>Город:</b> {city}\n"
+        f"🌍 <b>Формат поиска:</b> {search_scope}\n"
+        f"🚻 <b>Пол:</b> {gender}\n\n"
         f"🎯 <b>Цели:</b>\n"
         f"{goals}\n\n"
         f"🏷 <b>Интересы:</b>\n"
         f"{interests}\n\n"
-        f"💬 <b>Формат общения:</b>\n"
-        f"{communication_formats}\n\n"
         f"📝 <b>О себе:</b>\n"
-        f"{description}\n\n"
-        f"🔎 <b>Ищу:</b>\n"
-        f"{looking_for}"
+        f"{description}"
     )
 
 
