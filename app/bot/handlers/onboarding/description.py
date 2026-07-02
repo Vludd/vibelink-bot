@@ -9,7 +9,7 @@ from app.bot.handlers.onboarding.common import get_current_user
 from app.bot.keyboards.inline.onboarding import kb_photo_choice
 from app.bot.states.onboarding import Onboarding
 from app.bot.texts import ru as texts
-from app.bot.utils.messages import answer_or_replace_last_bot_message
+from app.bot.utils.messages import answer_new_message
 from app.services.profile_service import ProfileService
 
 router = Router(name="onboarding_description")
@@ -31,7 +31,7 @@ async def save_description(
     description = _clean_description(message.text)
 
     if len(description) < MIN_DESCRIPTION_LENGTH:
-        await answer_or_replace_last_bot_message(message, state, texts.INVALID_DESCRIPTION)
+        await answer_new_message(message, texts.INVALID_DESCRIPTION)
         return
 
     user = await get_current_user(message, session)
@@ -41,9 +41,8 @@ async def save_description(
 
     await ProfileService(session).update(user, description=description)
     await state.set_state(Onboarding.choosing_photo)
-    await answer_or_replace_last_bot_message(
+    await answer_new_message(
         message,
-        state,
         texts.ASK_PHOTO,
         reply_markup=kb_photo_choice(),
     )
@@ -51,4 +50,4 @@ async def save_description(
 
 @router.message(Onboarding.entering_description)
 async def invalid_description(message: Message, state: FSMContext) -> None:
-    await answer_or_replace_last_bot_message(message, state, texts.INVALID_DESCRIPTION)
+    await answer_new_message(message, texts.INVALID_DESCRIPTION)

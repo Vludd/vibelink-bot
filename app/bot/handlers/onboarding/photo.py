@@ -9,7 +9,7 @@ from app.bot.handlers.onboarding.common import get_current_user
 from app.bot.keyboards.inline.onboarding import kb_photo_choice, kb_privacy
 from app.bot.states.onboarding import Onboarding
 from app.bot.texts import ru as texts
-from app.bot.utils.messages import answer_or_replace_last_bot_message, edit_callback_message
+from app.bot.utils.messages import answer_new_message, edit_callback_message
 from app.services.profile_service import ProfileService
 
 router = Router(name="onboarding_photo")
@@ -24,9 +24,8 @@ async def _ask_privacy_from_callback(callback: CallbackQuery, state: FSMContext)
 async def _ask_privacy_from_message(message: Message, state: FSMContext) -> None:
     await state.set_state(Onboarding.choosing_privacy)
     await state.update_data(show_age=True, show_city=True)
-    await answer_or_replace_last_bot_message(
+    await answer_new_message(
         message,
-        state,
         texts.ASK_PRIVACY,
         reply_markup=kb_privacy(),
     )
@@ -61,9 +60,8 @@ async def skip_photo(
 @router.message(Onboarding.waiting_photo, F.photo)
 async def save_photo(message: Message, state: FSMContext, session: AsyncSession) -> None:
     if not message.photo:
-        await answer_or_replace_last_bot_message(
+        await answer_new_message(
             message,
-            state,
             texts.INVALID_PHOTO,
             reply_markup=kb_photo_choice(),
         )
@@ -81,9 +79,8 @@ async def save_photo(message: Message, state: FSMContext, session: AsyncSession)
 
 @router.message(Onboarding.waiting_photo)
 async def invalid_photo(message: Message, state: FSMContext) -> None:
-    await answer_or_replace_last_bot_message(
+    await answer_new_message(
         message,
-        state,
         texts.INVALID_PHOTO,
         reply_markup=kb_photo_choice(),
     )

@@ -13,7 +13,7 @@ from app.bot.keyboards.inline.onboarding import (
 )
 from app.bot.states.onboarding import Onboarding
 from app.bot.texts import ru as texts
-from app.bot.utils.messages import answer_or_replace_last_bot_message, edit_callback_message, answer_new_message
+from app.bot.utils.messages import answer_new_message, edit_callback_message
 from app.db.models.user import Gender, SearchScope
 from app.services.profile_service import ProfileService
 
@@ -52,9 +52,8 @@ async def _ask_interests(callback: CallbackQuery, state: FSMContext) -> None:
 async def _ask_interests_from_message(message: Message, state: FSMContext) -> None:
     await state.set_state(Onboarding.choosing_interest_categories)
     await state.update_data(selected_interest_ids=[])
-    await answer_or_replace_last_bot_message(
+    await answer_new_message(
         message,
-        state,
         texts.ASK_INTEREST_CATEGORIES,
         reply_markup=kb_interest_categories(),
     )
@@ -65,7 +64,7 @@ async def save_name(message: Message, state: FSMContext, session: AsyncSession) 
     name = _clean_text(message.text, max_len=64)
 
     if not _is_valid_name(name):
-        await answer_or_replace_last_bot_message(message, state, texts.INVALID_NAME)
+        await answer_new_message(message, texts.INVALID_NAME)
         return
 
     user = await get_current_user(message, session)
@@ -75,12 +74,12 @@ async def save_name(message: Message, state: FSMContext, session: AsyncSession) 
 
     await ProfileService(session).update(user, name=name)
     await state.set_state(Onboarding.entering_age)
-    await answer_or_replace_last_bot_message(message, state, texts.ASK_AGE)
+    await answer_new_message(message, texts.ASK_AGE)
 
 
 @router.message(Onboarding.entering_name)
 async def invalid_name(message: Message, state: FSMContext) -> None:
-    await answer_or_replace_last_bot_message(message, state, texts.INVALID_NAME)
+    await answer_new_message(message, texts.INVALID_NAME)
 
 
 @router.message(Onboarding.entering_age, F.text)
@@ -88,17 +87,17 @@ async def save_age(message: Message, state: FSMContext, session: AsyncSession) -
     raw_age = (message.text or "").strip()
 
     if not raw_age.isdigit():
-        await answer_or_replace_last_bot_message(message, state, texts.INVALID_AGE)
+        await answer_new_message(message, texts.INVALID_AGE)
         return
 
     age = int(raw_age)
 
     if age < MIN_AGE:
-        await answer_or_replace_last_bot_message(message, state, texts.AGE_TOO_LOW)
+        await answer_new_message(message, texts.AGE_TOO_LOW)
         return
 
     if age > MAX_AGE:
-        await answer_or_replace_last_bot_message(message, state, texts.AGE_TOO_HIGH)
+        await answer_new_message(message, texts.AGE_TOO_HIGH)
         return
 
     user = await get_current_user(message, session)
@@ -108,9 +107,8 @@ async def save_age(message: Message, state: FSMContext, session: AsyncSession) -
 
     await ProfileService(session).update(user, age=age)
     await state.set_state(Onboarding.choosing_gender)
-    await answer_or_replace_last_bot_message(
+    await answer_new_message(
         message,
-        state,
         texts.ASK_GENDER,
         reply_markup=kb_gender(),
     )
@@ -118,7 +116,7 @@ async def save_age(message: Message, state: FSMContext, session: AsyncSession) -
 
 @router.message(Onboarding.entering_age)
 async def invalid_age(message: Message, state: FSMContext) -> None:
-    await answer_or_replace_last_bot_message(message, state, texts.INVALID_AGE)
+    await answer_new_message(message, texts.INVALID_AGE)
 
 
 @router.callback_query(Onboarding.choosing_gender, F.data.startswith("ob:gender:"))
@@ -179,7 +177,7 @@ async def save_city(message: Message, state: FSMContext, session: AsyncSession) 
     city = _clean_text(message.text, max_len=64)
 
     if not _is_valid_city(city):
-        await answer_or_replace_last_bot_message(message, state, texts.INVALID_CITY)
+        await answer_new_message(message, texts.INVALID_CITY)
         return
 
     user = await get_current_user(message, session)
@@ -193,4 +191,4 @@ async def save_city(message: Message, state: FSMContext, session: AsyncSession) 
 
 @router.message(Onboarding.entering_city)
 async def invalid_city(message: Message, state: FSMContext) -> None:
-    await answer_or_replace_last_bot_message(message, state, texts.INVALID_CITY)
+    await answer_new_message(message, texts.INVALID_CITY)
