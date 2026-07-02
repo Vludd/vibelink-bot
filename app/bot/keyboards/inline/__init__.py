@@ -1,10 +1,13 @@
 from app.bot.keyboards.inline.onboarding import (
+    kb_onboarding_start,
+    kb_username_required,
     kb_goals,
     kb_gender,
     kb_search_scope,
     kb_interest_categories,
     kb_interest_tags,
     kb_communication_format,
+    kb_photo_choice,
     kb_privacy,
     kb_preview_confirm,
 )
@@ -27,12 +30,15 @@ from app.bot.keyboards.inline.profile import (
 
 __all__ = [
     # onboarding
+    "kb_onboarding_start",
+    "kb_username_required",
     "kb_goals",
     "kb_gender",
     "kb_search_scope",
     "kb_interest_categories",
     "kb_interest_tags",
     "kb_communication_format",
+    "kb_photo_choice",
     "kb_privacy",
     "kb_preview_confirm",
     # search

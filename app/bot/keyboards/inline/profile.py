@@ -38,13 +38,21 @@ def kb_main_menu(is_hidden: bool = False) -> InlineKeyboardMarkup:
 
 # ─────────────────────────── профиль ──────────────────────────────────────
 
-def kb_profile_menu(is_hidden: bool = False) -> InlineKeyboardMarkup:
+def kb_profile_menu(is_hidden: bool = False, is_complete: bool = True) -> InlineKeyboardMarkup:
     hidden_label = "👁 Показать в поиске" if is_hidden else "⏸ Скрыть из поиска"
+
+    if not is_complete:
+        return InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🚀 Заполнить профиль", callback_data="ob:start")],
+            [InlineKeyboardButton(text="ℹ️ Как это работает", callback_data="ob:how")],
+            [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:back")],
+        ])
+
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="👁 Посмотреть анкету",  callback_data="prof:view")],
-        [InlineKeyboardButton(text="✏️ Редактировать",      callback_data="prof:edit")],
-        [InlineKeyboardButton(text=hidden_label,            callback_data="prof:toggle_hidden")],
-        [InlineKeyboardButton(text="◀️ Назад",              callback_data="menu:back")],
+        [InlineKeyboardButton(text="👁 Посмотреть анкету", callback_data="prof:view")],
+        [InlineKeyboardButton(text="✏️ Редактировать", callback_data="prof:edit")],
+        [InlineKeyboardButton(text=hidden_label, callback_data="prof:toggle_hidden")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:back")],
     ])
 
 

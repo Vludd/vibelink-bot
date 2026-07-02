@@ -5,6 +5,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.keyboards.inline.onboarding import kb_onboarding_start
 from app.bot.keyboards.inline.profile import kb_main_menu
 from app.bot.texts import ru as texts
 from app.bot.utils.messages import answer_new_message
@@ -30,6 +31,11 @@ async def cmd_start(message: Message, session: AsyncSession) -> None:
         user=user,
         telegram_username=message.from_user.username,
     )
+    
+    if user.is_profile_complete:
+        reply_markup = kb_main_menu(is_hidden=user.is_hidden)
+    else:
+        reply_markup = kb_onboarding_start()
 
     await answer_new_message(
         message,

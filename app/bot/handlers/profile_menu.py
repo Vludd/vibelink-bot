@@ -7,7 +7,7 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.keyboards.inline.profile import kb_profile_menu
+from app.bot.keyboards.inline.profile import kb_main_menu, kb_profile_menu
 from app.bot.texts import ru as texts
 from app.bot.utils.messages import edit_callback_message
 from app.services.profile_service import ProfileService
@@ -21,13 +21,13 @@ GOAL_LABELS: dict[str, str] = {
     "teammate": "🎮 Тиммейта",
     "business": "💼 Бизнес-контакт",
     "project": "🧑‍💻 Проект",
-    "chat": "💬 Общение",
+    "talk": "💬 Общение",
 }
 
 SEARCH_SCOPE_LABELS: dict[str, str] = {
     "city": "📍 В моём городе",
     "online": "🌍 Онлайн",
-    "country": "🇰🇿 По стране / СНГ",
+    "cis": "🇰🇿 По стране / СНГ",
 }
 
 
@@ -66,10 +66,25 @@ def format_search_scope(search_scope: Any) -> str:
     return SEARCH_SCOPE_LABELS.get(raw, raw)
 
 
+@router.callback_query(F.data == "menu:back")
+async def back_to_main_menu(callback: CallbackQuery, session: AsyncSession) -> None:
+    profile_service = ProfileService(session)
+    user = await profile_service.get_by_telegram_id(callback.from_user.id)
+
+    await edit_callback_message(
+        callback,
+        texts.MAIN_MENU,
+        reply_markup=kb_main_menu(is_hidden=user.is_hidden if user else False),
+    )
+
+
 @router.callback_query(F.data == "menu:profile")
 async def show_profile(callback: CallbackQuery, session: AsyncSession) -> None:
     profile_service = ProfileService(session)
-    user = await profile_service.get_by_telegram_id(callback.from_user.id)
+    user = await profile_service.get_by_telegram_id(
+        callback.from_user.id,
+        with_interests=True,
+    )
 
     if user is None:
         await edit_callback_message(
@@ -84,7 +99,7 @@ async def show_profile(callback: CallbackQuery, session: AsyncSession) -> None:
             "👤 <b>Мой профиль</b>\n\n"
             "Профиль ещё не заполнен.\n\n"
             "Нужно пройти короткую анкету, чтобы я мог подбирать людей по интересам.",
-            reply_markup=kb_profile_menu(is_hidden=user.is_hidden),
+            reply_markup=kb_profile_menu(is_hidden=user.is_hidden, is_complete=False),
         )
         return
 
@@ -98,7 +113,7 @@ async def show_profile(callback: CallbackQuery, session: AsyncSession) -> None:
                 "search_scope": format_search_scope(user.search_scope),
                 "gender": format_enum(user.gender),
                 "goals": format_goals(user.goals),
-                "interests": [],  # позже - через eager loading
+                "interests": [interest.name for interest in user.interests],
                 "description": user.description,
             }
         ),

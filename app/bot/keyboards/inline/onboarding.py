@@ -79,6 +79,26 @@ def _done_btn(step: str) -> InlineKeyboardButton:
 
 # ──────────────────────────── публичные фабрики ───────────────────────────
 
+
+def kb_onboarding_start() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [_btn("🚀 Заполнить профиль", "start")],
+            [_btn("ℹ️ Как это работает", "how")],
+            # добавить кнопку назад?
+        ]
+    )
+
+
+def kb_username_required() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [_btn("✅ Проверить username", "username", "check")],
+            [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:back")],
+        ]
+    )
+
+
 def kb_goals(selected: set[Goal] | None = None) -> InlineKeyboardMarkup:
     """Мультивыбор целей. Выбранные — с галочкой."""
     selected = selected or set()
@@ -160,6 +180,15 @@ def kb_communication_format(selected: set[str] | None = None) -> InlineKeyboardM
     if selected:
         builder.row(_done_btn("format"))
     return builder.as_markup()
+
+
+def kb_photo_choice() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [_btn("📸 Добавить фото", "photo", "add")],
+            [_btn("Пропустить", "photo", "skip")],
+        ]
+    )
 
 
 def kb_privacy(show_age: bool = True, show_city: bool = True) -> InlineKeyboardMarkup:

@@ -98,7 +98,7 @@ async def answer_or_replace_last_bot_message(
 
     if last_bot_message_id:
         try:
-            edited_message = await message.bot.edit_message_text(
+            edited_message = await message.bot.edit_message_text( # type: ignore
                 chat_id=message.chat.id,
                 message_id=last_bot_message_id,
                 text=text,
