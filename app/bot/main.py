@@ -23,6 +23,9 @@ from app.bot.logger import setup_logger
 
 from app.bot.texts import ru as texts
 
+from app.bot.dependencies import build_engine, build_session_factory
+from app.bot.middlewares.db_session import DbSessionMiddleware
+
 logger = logging.getLogger(__name__)
 
 HANDLER_MODULES: tuple[str, ...] = (
@@ -148,10 +151,17 @@ async def main() -> None:
 
     bot = create_bot()
     dp = create_dispatcher()
+    
+    engine = build_engine()
+    session_factory = build_session_factory(engine)
+    
+    dp.update.outer_middleware(DbSessionMiddleware(session_factory))
 
     include_project_routers(dp)
 
-    dp.include_router(build_dev_router())
+    if settings.is_dev:
+        dp.include_router(build_dev_router())
+        logger.info("Dev router included")
 
     logger.info("Starting VibeLink bot polling")
 
@@ -164,6 +174,7 @@ async def main() -> None:
     finally:
         await bot.session.close()
         await dp.storage.close()
+        await engine.dispose()
 
 
 def run() -> None:

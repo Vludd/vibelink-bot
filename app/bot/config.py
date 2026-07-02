@@ -3,8 +3,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
     )
+    
+    # App
+    app_env: str = "dev"
 
     # Telegram
     bot_token: str
@@ -22,6 +27,10 @@ class Settings(BaseSettings):
 
     # Misc
     log_level: str = "INFO"
+    
+    @property
+    def is_dev(self) -> bool:
+        return self.app_env.lower() in {"dev", "local", "development"}
 
 
 settings = Settings() # pyright: ignore[reportCallIssue]
