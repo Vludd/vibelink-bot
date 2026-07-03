@@ -11,27 +11,39 @@ class UserRepository:
         self.session = session
 
     async def get_by_id(self, user_id: int, *, with_interests: bool = False) -> User | None:
-        stmt = select(User).where(User.id == user_id)
+        stmt = (
+            select(User)
+            .where(User.id == user_id)
+        )
+        
         if with_interests:
             stmt = stmt.options(selectinload(User.interests))
+        
         return await self.session.scalar(stmt)
 
     async def get_by_telegram_id(
         self, telegram_id: int, *, with_interests: bool = False
     ) -> User | None:
-        stmt = select(User).where(User.telegram_id == telegram_id)
+        stmt = (
+            select(User)
+            .where(User.telegram_id == telegram_id)
+        )
+        
         if with_interests:
             stmt = stmt.options(selectinload(User.interests))
+        
         return await self.session.scalar(stmt)
 
     async def get_or_create(self, telegram_id: int, telegram_username: str | None) -> User:
         """Used on /start: returns the existing user or creates a bare row
         so onboarding (FSM) has something to attach profile data to."""
         user = await self.get_by_telegram_id(telegram_id)
+        
         if user is not None:
             return user
 
         user = User(telegram_id=telegram_id, telegram_username=telegram_username)
+        
         self.session.add(user)
         await self.session.flush()  # populates user.id without committing
         return user
@@ -50,6 +62,7 @@ class UserRepository:
             if not hasattr(user, key):
                 raise ValueError(f"User has no field {key!r}")
             setattr(user, key, value)
+        
         await self.session.flush()
         return user
 
@@ -93,16 +106,19 @@ class UserRepository:
             .options(selectinload(User.interests))
             .where(
                 User.id != user_id,
-                User.id.notin_(exclude_ids) if exclude_ids else True,
+                # User.id.notin_(exclude_ids) if exclude_ids else True,
                 User.is_profile_complete.is_(True),
                 User.is_hidden.is_(False),
                 User.is_banned.is_(False),
                 User.telegram_username.is_not(None),
             )
         )
+        
+        if exclude_ids:
+            stmt = stmt.where(User.id.notin_(exclude_ids))
 
         if goal is not None:
-            stmt = stmt.where(User.goals.any(goal))
+            stmt = stmt.where(User.goals.contains([goal]))
 
         if search_scope == SearchScope.CITY and city:
             stmt = stmt.where(User.city == city)

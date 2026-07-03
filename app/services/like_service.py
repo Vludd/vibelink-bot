@@ -11,7 +11,7 @@ from app.db.repositories import LikeRepository, UserRepository
 class LikeResult:
     like: Like
     is_match: bool
-    # Populated only when is_match=True — ready to pass straight to NotificationService.
+    # Populated only when is_match=True - ready to pass straight to NotificationService.
     matched_user: User | None = None
     common_interests: list[str] = field(default_factory=list)
 
@@ -19,8 +19,8 @@ class LikeResult:
 class LikeService:
     """Sends likes and detects mutual matches.
 
-    A 'match' (коннект) is purely the presence of two Like rows in both
-    directions — no separate table needed.
+    A 'match' is purely the presence of two Like rows in both
+    directions - no separate table needed.
     """
 
     def __init__(self, session: AsyncSession) -> None:
@@ -58,13 +58,13 @@ class LikeService:
         )
 
     async def get_match_ids(self, user_id: int) -> set[int]:
-        """Powers 'Мои коннекты' list."""
+        """Powers 'My matches' list."""
         return await self.like_repo.get_match_ids(user_id)
 
     async def get_received_ids(self, user_id: int) -> set[int]:
-        """Powers 'Кто лайкнул меня' list."""
+        """Powers 'Who liked me' list."""
         return await self.like_repo.get_received_ids(user_id)
 
     async def remove_like(self, from_user_id: int, to_user_id: int) -> bool:
-        """'Отменить лайк' — optional feature for future iterations."""
+        """'Remove like' - optional feature for future iterations."""
         return await self.like_repo.remove_like(from_user_id, to_user_id)

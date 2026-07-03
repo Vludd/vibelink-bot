@@ -8,7 +8,7 @@ from sqlalchemy import text
 from app.bot.dependencies import build_engine
 from app.db.base import Base
 
-# Important: import all models so Base.metadata sees every table.
+# Import all models so Base.metadata sees every table.
 import app.db.models  # noqa: F401
 
 

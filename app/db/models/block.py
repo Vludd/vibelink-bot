@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, UniqueConstraint, func
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class Block(Base):
-    """blocker hides blocked from their search results and incoming likes."""
+    """Blocker hides blocked from their search results and incoming likes."""
 
     __tablename__ = "blocks"
     __table_args__ = (

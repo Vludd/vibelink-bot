@@ -28,14 +28,14 @@ _GREETING_HINT = (
 
 def _format_interests(names: list[str]) -> str:
     if not names:
-        return "— нет общих интересов"
+        return "- нет общих интересов"
     return "\n".join(f"• {n}" for n in names[:5])  # cap at 5 to avoid wall of text
 
 
 class NotificationService:
     """Sends Telegram messages on behalf of the bot.
 
-    Intentionally thin — no DB access here, just message delivery.
+    Intentionally thin - no DB access here, just message delivery.
     All data must be pre-fetched by the caller (LikeService / handlers).
     """
 
@@ -59,7 +59,7 @@ class NotificationService:
         the bot (TelegramForbiddenError) or another delivery error occurred.
         """
         if not matched_with.telegram_username:
-            # Should not happen — is_searchable guards against this,
+            # Should not happen - is_searchable guards against this,
             # but guard here too to avoid a broken notification.
             logger.warning(
                 "notify_match: matched_with (id=%s) has no username, skipping",
@@ -82,14 +82,21 @@ class NotificationService:
             return True
         except TelegramForbiddenError:
             logger.info(
-                "notify_match: user tg_id=%s has blocked the bot", user.telegram_id
+                "notify_match: user tg_id=%s has blocked the bot", 
+                user.telegram_id
             )
             return False
         except TelegramRetryAfter as e:
-            logger.warning("notify_match: flood control, retry after %ss", e.retry_after)
+            logger.warning(
+                "notify_match: flood control, retry after %ss", 
+                e.retry_after
+            )
             return False
         except Exception as e:
-            logger.exception("notify_match: unexpected error for tg_id=%s: %s", user.telegram_id, e)
+            logger.exception(
+                "notify_match: unexpected error for tg_id=%s: %s", 
+                user.telegram_id, e
+            )
             return False
 
     async def notify_both_on_match(

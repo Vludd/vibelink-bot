@@ -56,7 +56,7 @@ class User(TimestampMixin, Base):
         ARRAY(Enum(Goal, name="goal_enum")), nullable=True
     )
 
-    # Privacy toggles — what is shown to other users before a mutual match
+    # Privacy toggles - what is shown to other users before a mutual match
     show_age: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     show_city: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
