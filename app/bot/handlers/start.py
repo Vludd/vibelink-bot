@@ -32,13 +32,12 @@ async def cmd_start(message: Message, session: AsyncSession) -> None:
         telegram_username=message.from_user.username,
     )
     
+    reply_markup = kb_onboarding_start()
     if user.is_profile_complete:
         reply_markup = kb_main_menu(is_hidden=user.is_hidden)
-    else:
-        reply_markup = kb_onboarding_start()
 
     await answer_new_message(
         message,
         texts.start_text(message.from_user.username),
-        reply_markup=kb_main_menu(is_hidden=user.is_hidden),
+        reply_markup=reply_markup,
     )
