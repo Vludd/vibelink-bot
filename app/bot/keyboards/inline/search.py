@@ -19,10 +19,25 @@ from app.bot.keyboards.inline.onboarding import GOAL_LABELS
 def kb_search_goal() -> InlineKeyboardMarkup:
     """Выбор режима поиска перед показом карточек."""
     builder = InlineKeyboardBuilder()
+
     for goal, label in GOAL_LABELS.items():
-        builder.button(text=label, callback_data=f"search:goal:{goal.value}")
-    builder.button(text="🎲 Любого по интересам", callback_data="search:goal:any")
+        builder.button(
+            text=label,
+            callback_data=f"search:goal:{goal.value}",
+        )
+
+    builder.button(
+        text="🎲 Любого по интересам",
+        callback_data="search:goal:any",
+    )
+
+    builder.button(
+        text="◀️ Назад",
+        callback_data="menu:back",
+    )
+
     builder.adjust(1)
+
     return builder.as_markup()
 
 

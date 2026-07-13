@@ -39,7 +39,6 @@ GOAL_LABELS: dict[Goal, str] = {
 GENDER_LABELS: dict[Gender, str] = {
     Gender.MALE:   "👦 Парень",
     Gender.FEMALE: "👧 Девушка",
-    Gender.OTHER:  "🌈 Другое",
 }
 
 SCOPE_LABELS: dict[SearchScope, str] = {
@@ -85,7 +84,6 @@ def kb_onboarding_start() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [_btn("🚀 Заполнить профиль", "start")],
             [_btn("ℹ️ Как это работает", "how")],
-            # добавить кнопку назад?
         ]
     )
 

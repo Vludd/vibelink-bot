@@ -2,8 +2,15 @@ from dataclasses import dataclass, field
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.user import Goal, User
+from app.db.models.user import Goal, SearchScope, User, Gender
 from app.db.repositories import BlockRepository, LikeRepository, UserRepository
+
+
+MATCH_WEIGHTS = {
+    "goal_match": 40,
+    "same_city": 10,
+    "similar_age": 5,
+}
 
 
 @dataclass
@@ -12,6 +19,7 @@ class CandidateCard:
 
     user: User
     # Jaccard similarity over interest sets, expressed as 0–100.
+    score: int
     match_percent: int
     common_interests: list[str] = field(default_factory=list)
 
@@ -46,6 +54,69 @@ class MatchingService:
         self.user_repo = UserRepository(session)
         self.like_repo = LikeRepository(session)
         self.block_repo = BlockRepository(session)
+        
+    @staticmethod
+    def _score_candidate(
+        viewer: User,
+        candidate: User,
+        *,
+        goal: Goal | None,
+        base_match: int,
+    ) -> int:
+        """Calculate internal ranking score."""
+
+        score = base_match
+
+        #
+        # Looking for the same goal
+        #
+        if (
+            goal is not None
+            and candidate.goals
+            and goal in candidate.goals
+        ):
+            score += MATCH_WEIGHTS["goal_match"]
+
+        #
+        # One city
+        #
+        if (
+            viewer.search_scope == SearchScope.CITY
+            and viewer.city
+            and candidate.city == viewer.city
+        ):
+            score += MATCH_WEIGHTS["same_city"]
+
+        #
+        # Similar age
+        #
+        if (
+            viewer.age is not None
+            and candidate.age is not None
+            and abs(viewer.age - candidate.age) <= 2
+        ):
+            score += MATCH_WEIGHTS["similar_age"]
+
+        return score
+        
+    @staticmethod
+    def _gender_matches(
+        viewer: User,
+        candidate: User,
+        goal: Goal | None,
+    ) -> bool:
+        """Check whether candidate passes gender filter."""
+
+        if goal != Goal.RELATIONSHIP:
+            return True
+
+        if viewer.gender == Gender.MALE:
+            return candidate.gender == Gender.FEMALE
+
+        if viewer.gender == Gender.FEMALE:
+            return candidate.gender == Gender.MALE
+
+        return True
 
     async def get_candidates(
         self,
@@ -61,7 +132,7 @@ class MatchingService:
 
         raw_pool = await self.user_repo.find_candidates(
             user_id=viewer.id,
-            goal=goal,
+            goal=None,
             search_scope=viewer.search_scope,
             city=viewer.city,
             exclude_ids=exclude_ids,
@@ -72,16 +143,47 @@ class MatchingService:
 
         cards: list[CandidateCard] = []
         for candidate in raw_pool:
-            candidate_interest_ids = {i.id for i in (candidate.interests or [])}
-            score = _jaccard_score(viewer_interest_ids, candidate_interest_ids)
+            if not self._gender_matches(
+                viewer,
+                candidate,
+                goal,
+            ):
+                continue
+
+            candidate_interest_ids = {
+                i.id
+                for i in (candidate.interests or [])
+            }
+
+            match_percent = _jaccard_score(
+                viewer_interest_ids,
+                candidate_interest_ids,
+            )
+
             common = [
                 i.name
                 for i in (candidate.interests or [])
                 if i.id in viewer_interest_ids
             ]
-            cards.append(
-                CandidateCard(user=candidate, match_percent=score, common_interests=common)
+
+            score = self._score_candidate(
+                viewer,
+                candidate,
+                goal=goal,
+                base_match=match_percent,
             )
 
-        cards.sort(key=lambda c: c.match_percent, reverse=True)
+            cards.append(
+                CandidateCard(
+                    user=candidate,
+                    score=score,
+                    match_percent=match_percent,
+                    common_interests=common,
+                )
+            )
+
+        cards.sort(
+            key=lambda c: c.score,
+            reverse=True,
+        )
         return cards[:limit]
