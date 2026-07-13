@@ -85,3 +85,32 @@ class LikeService:
             from_user_id=user_b_id,
             to_user_id=user_a_id,
         )
+    
+    async def get_matches(
+        self,
+        user_id: int,
+        *,
+        with_interests: bool = False,
+    ) -> list[User]:
+        return await self.like_repo.get_matches(user_id, with_interests=with_interests)
+    
+    async def get_match(
+        self,
+        user_id: int,
+        connected_user_id: int,
+        *,
+        with_interests: bool = False,
+    ) -> User | None:
+        matches = await self.get_matches(
+            user_id,
+            with_interests=with_interests,
+        )
+
+        return next(
+            (
+                user
+                for user in matches
+                if user.id == connected_user_id
+            ),
+            None,
+        )

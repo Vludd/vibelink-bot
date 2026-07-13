@@ -7,6 +7,7 @@ HANDLER_MODULES: tuple[str, ...] = (
     "app.bot.handlers.onboarding.photo",
     "app.bot.handlers.onboarding.privacy",
     "app.bot.handlers.onboarding.preview",
+    "app.bot.handlers.connections",
     "app.bot.handlers.search",
     "app.bot.handlers.matching",
     "app.bot.handlers.profile_menu",

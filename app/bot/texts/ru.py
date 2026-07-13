@@ -436,6 +436,42 @@ NO_MATCHES = (
     "Нажимай «Искать людей» и ставь лайки тем, кто тебе интересен."
 )
 
+CONNECTIONS_EMPTY = (
+    "💌 <b>Мои коннекты</b>\n\n"
+    "Пока здесь пусто.\n\n"
+    "Когда взаимная симпатия случится, "
+    "все ваши коннекты появятся здесь."
+)
+
+def connections_list(count: int) -> str:
+    return (
+        "💌 <b>Мои коннекты</b>\n\n"
+        f"Всего коннектов: <b>{count}</b>\n\n"
+        "Выберите человека, чтобы открыть карточку."
+    )
+    
+def connection_card(user: dict) -> str:
+    age = user.get("age", "—")
+    city = user.get("city", "—")
+    description = user.get("description") or "—"
+
+    return (
+        f"👤 <b>{user['name']}</b>\n\n"
+        f"🎂 Возраст: {age}\n"
+        f"📍 Город: {city}\n\n"
+        f"💬 <b>О себе</b>\n"
+        f"{description}"
+    )
+    
+def connection_greeting(
+    greeting: str,
+) -> str:
+    return (
+        "👋 <b>Первое сообщение</b>\n\n"
+        "Можешь отправить это сообщение своему новому коннекту:\n\n"
+        f"<code>{greeting}</code>\n\n"
+        "Нажми <b>💬 Написать</b>, чтобы открыть чат."
+    )
 
 # =========================
 # Moderation / Safety

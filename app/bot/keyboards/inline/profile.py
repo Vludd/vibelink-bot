@@ -29,7 +29,7 @@ def kb_main_menu(is_hidden: bool = False) -> InlineKeyboardMarkup:
     hidden_label = "👁 Показать меня в поиске" if is_hidden else "⏸ Скрыть меня из поиска"
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔎 Искать людей",    callback_data="menu:search")],
-        [InlineKeyboardButton(text="💌 Мои коннекты",    callback_data="menu:matches")],
+        [InlineKeyboardButton(text="💌 Мои коннекты",    callback_data="menu:connections")],
         [InlineKeyboardButton(text="👤 Мой профиль",     callback_data="menu:profile")],
         [InlineKeyboardButton(text="⚙️ Фильтры",         callback_data="menu:filters")],
         [InlineKeyboardButton(text=hidden_label,         callback_data="menu:toggle_hidden")],

@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.handlers.common import show_current_candidate
+from app.bot.handlers.views import show_current_candidate
 from app.bot.keyboards.inline.search import kb_search_goal
 from app.bot.states.search import SearchState
 from app.bot.texts import ru as texts

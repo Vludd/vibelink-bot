@@ -8,7 +8,7 @@ from app.bot.handlers.onboarding.common import get_current_user
 from app.bot.states.search import SearchState
 from app.bot.texts import ru as texts
 
-from app.bot.handlers.common import (
+from app.bot.handlers.views import (
     get_current_card,
     show_current_candidate,
     show_match_success,

@@ -1,9 +1,10 @@
 from sqlalchemy import exists, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload
 
 from app.db.models.like import Like
+from app.db.models.user import User
 
 
 class LikeRepository:
@@ -112,3 +113,38 @@ class LikeRepository:
         await self.session.delete(like)
         await self.session.flush()
         return True
+    
+    async def get_matches(
+        self,
+        user_id: int,
+        *,
+        with_interests: bool = False,
+    ) -> list[User]:
+        """Return users with whom `user_id` has a mutual like."""
+
+        outgoing = aliased(Like)
+        incoming = aliased(Like)
+
+        stmt = (
+            select(User)
+            .join(
+                outgoing,
+                outgoing.to_user_id == User.id,
+            )
+            .join(
+                incoming,
+                (incoming.from_user_id == User.id)
+                & (incoming.to_user_id == user_id),
+            )
+            .where(
+                outgoing.from_user_id == user_id,
+            )
+            .order_by(outgoing.created_at.desc())
+        )
+        
+        if with_interests:
+            stmt = stmt.options(
+                selectinload(User.interests),
+            )
+
+        return list((await self.session.scalars(stmt)).unique().all())
