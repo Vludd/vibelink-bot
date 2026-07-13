@@ -34,10 +34,15 @@ class UserRepository:
         
         return await self.session.scalar(stmt)
 
-    async def get_or_create(self, telegram_id: int, telegram_username: str | None) -> User:
+    async def get_or_create(
+        self, 
+        telegram_id: int, 
+        telegram_username: str | None,
+        with_interests: bool = False
+    ) -> User:
         """Used on /start: returns the existing user or creates a bare row
         so onboarding (FSM) has something to attach profile data to."""
-        user = await self.get_by_telegram_id(telegram_id)
+        user = await self.get_by_telegram_id(telegram_id, with_interests=with_interests)
         
         if user is not None:
             return user

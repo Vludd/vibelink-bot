@@ -68,3 +68,20 @@ class LikeService:
     async def remove_like(self, from_user_id: int, to_user_id: int) -> bool:
         """'Remove like' - optional feature for future iterations."""
         return await self.like_repo.remove_like(from_user_id, to_user_id)
+    
+    async def create_match(
+        self,
+        user_a_id: int,
+        user_b_id: int,
+    ) -> LikeResult:
+        """Create a mutual match between two users."""
+
+        await self.send_like(
+            from_user_id=user_a_id,
+            to_user_id=user_b_id,
+        )
+
+        return await self.send_like(
+            from_user_id=user_b_id,
+            to_user_id=user_a_id,
+        )

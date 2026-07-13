@@ -12,7 +12,7 @@ class CandidateCard:
 
     user: User
     # Jaccard similarity over interest sets, expressed as 0–100.
-    score: int
+    match_percent: int
     common_interests: list[str] = field(default_factory=list)
 
 
@@ -80,8 +80,8 @@ class MatchingService:
                 if i.id in viewer_interest_ids
             ]
             cards.append(
-                CandidateCard(user=candidate, score=score, common_interests=common)
+                CandidateCard(user=candidate, match_percent=score, common_interests=common)
             )
 
-        cards.sort(key=lambda c: c.score, reverse=True)
+        cards.sort(key=lambda c: c.match_percent, reverse=True)
         return cards[:limit]

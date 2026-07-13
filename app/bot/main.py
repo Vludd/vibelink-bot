@@ -23,7 +23,7 @@ from app.bot.logger import setup_logger
 
 from app.bot.texts import ru as texts
 
-from app.bot.dependencies import build_engine, build_session_factory
+from app.bot.dependencies import build_container, build_engine, build_session_factory, check_database
 from app.bot.middlewares.db_session import DbSessionMiddleware
 
 logger = logging.getLogger(__name__)
@@ -141,7 +141,7 @@ def build_dev_router() -> Router:
     @router.callback_query(F.data.startswith("match:"))
     
     async def dev_callback_stub(callback: CallbackQuery) -> None:
-        await callback.answer("Пока это dev-заглушка ✅", show_alert=False)
+        await callback.answer(texts.ACTION_IN_DEV, show_alert=False)
 
     return router
 
@@ -153,6 +153,9 @@ async def main() -> None:
     dp = create_dispatcher()
     
     engine = build_engine()
+    
+    await check_database(engine)
+    
     session_factory = build_session_factory(engine)
     
     dp.update.outer_middleware(DbSessionMiddleware(session_factory))

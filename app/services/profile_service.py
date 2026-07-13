@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models.interest import Interest
 from app.db.models.user import Gender, Goal, SearchScope, User
 from app.db.repositories import InterestRepository, UserRepository
+from app.services.dto.profile import ProfileData
 
 
 class ProfileService:
@@ -69,3 +71,38 @@ class ProfileService:
         return await self.user_repo.get_by_telegram_id(
             telegram_id, with_interests=with_interests
         )
+        
+    async def bootstrap_profile(
+        self,
+        user: User,
+        profile: ProfileData,
+    ) -> User:
+        """Fill a profile in a single operation.
+
+        Used by development tools and automated tests.
+        """
+
+        await self.user_repo.update_profile(
+            user,
+            name=profile.name,
+            age=profile.age,
+            gender=profile.gender,
+            city=profile.city,
+            search_scope=profile.search_scope,
+            goals=profile.goals,
+            description=profile.description,
+            photo_file_id=profile.photo_file_id,
+            show_age=profile.show_age,
+            show_city=profile.show_city,
+        )
+
+        await self.user_repo.set_interests(
+            user,
+            profile.interests,
+        )
+
+        await self.user_repo.mark_profile_complete(
+            user,
+        )
+
+        return user

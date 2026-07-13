@@ -328,6 +328,9 @@ NO_MORE_CANDIDATES = (
     "Позже могут появиться новые люди."
 )
 
+INVALID_SEARCH_MODE = "Неизвестный режим поиска."
+USER_IS_NOT_FOUND = "Пользователь не найден."
+
 
 def candidate_card(candidate: Mapping[str, Any]) -> str:
     name = value_or_dash(candidate.get("name"))
