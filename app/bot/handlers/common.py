@@ -3,6 +3,7 @@ from aiogram.types import CallbackQuery
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.keyboards.inline.match import kb_match_success
 from app.bot.keyboards.inline.search import kb_candidate_card
 from app.bot.texts import ru as texts
 from app.bot.utils.messages import edit_callback_message
@@ -11,6 +12,23 @@ from app.db.models.user import User
 from app.db.repositories import UserRepository
 
 from app.bot.handlers.onboarding.common import profile_to_payload
+
+
+async def get_current_card(
+    state: FSMContext,
+) -> dict | None:
+    data = await state.get_data()
+
+    cards = data.get("cards")
+    index = data.get("index")
+
+    if not cards or index is None:
+        return None
+
+    if index >= len(cards):
+        return None
+
+    return cards[index]
 
 
 async def show_candidate(
@@ -100,18 +118,26 @@ async def show_next_candidate(
         state,
     )
     
-async def get_current_card(
-    state: FSMContext,
-) -> dict | None:
-    data = await state.get_data()
+async def show_match_success(
+    callback: CallbackQuery,
+    user: User,
+    common_interests: list[str],
+) -> None:
+    if user.telegram_username is None:
+        raise ValueError(
+            "Matched user has no telegram_username."
+        )
 
-    cards = data.get("cards")
-    index = data.get("index")
+    payload = profile_to_payload(user)
+    payload["common_interests"] = common_interests
 
-    if not cards or index is None:
-        return None
-
-    if index >= len(cards):
-        return None
-
-    return cards[index]
+    await edit_callback_message(
+        callback,
+        texts.match_created(
+            matched_user=payload,
+            common_interests=common_interests,
+        ),
+        reply_markup=kb_match_success(
+            username=user.telegram_username,
+        ),
+    )

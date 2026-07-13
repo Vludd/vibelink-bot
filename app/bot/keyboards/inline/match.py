@@ -38,6 +38,25 @@ def kb_match_actions(matched_user_id: int, telegram_username: str) -> InlineKeyb
     ])
 
 
+def kb_match_success(username: str):
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="💬 Написать",
+                    url=f"https://t.me/{username}",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="➡ Продолжить поиск",
+                    callback_data="match:continue",
+                )
+            ],
+        ]
+    )
+
+
 def kb_copy_greeting(matched_user_id: int) -> InlineKeyboardMarkup:
     """После показа готового приветствия — позволяет сразу перейти в ЛС."""
     return InlineKeyboardMarkup(inline_keyboard=[

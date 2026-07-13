@@ -37,6 +37,9 @@ def kb_candidate_card(candidate_id: int) -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="🚩 Пожаловаться", callback_data=f"card:report:{candidate_id}"),
             InlineKeyboardButton(text="🚫 Заблокировать", callback_data=f"card:block:{candidate_id}"),
         ],
+        [
+            InlineKeyboardButton(text="🏠 Главное меню", callback_data=f"search:menu"),
+        ],
     ])
 
 

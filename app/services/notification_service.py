@@ -91,14 +91,14 @@ class NotificationService:
             return True
         except TelegramForbiddenError:
             logger.info(
-                "notify_match: bot is blocked by tg_id=%s",
+                "notify_match: bot blocked by tg_id=%s",
                 user.telegram_id,
             )
             return False
 
         except TelegramBadRequest as e:
-            logger.debug(
-                "notify_match: tg_id=%s skipped: %s",
+            logger.info(
+                "notify_match: tg_id=%s skipped (%s)",
                 user.telegram_id,
                 e.message,
             )
@@ -117,13 +117,3 @@ class NotificationService:
                 user.telegram_id,
             )
             return False
-
-    async def notify_both_on_match(
-        self,
-        user_a: User,
-        user_b: User,
-        common_interests: list[str],
-    ) -> None:
-        """Notify both sides of a mutual match. Called by LikeService handler."""
-        await self.notify_match(user_a, matched_with=user_b, common_interests=common_interests)
-        await self.notify_match(user_b, matched_with=user_a, common_interests=common_interests)

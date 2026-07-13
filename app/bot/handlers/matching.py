@@ -11,6 +11,7 @@ from app.bot.texts import ru as texts
 from app.bot.handlers.common import (
     get_current_card,
     show_current_candidate,
+    show_match_success,
     show_next_candidate,
 )
 
@@ -29,6 +30,23 @@ router = Router()
     F.data.startswith("card:skip:")
 )
 async def skip_candidate(
+    callback: CallbackQuery,
+    session: AsyncSession,
+    state: FSMContext,
+):
+    await show_next_candidate(
+        callback,
+        session,
+        state,
+    )
+
+    await callback.answer()
+    
+@router.callback_query(
+    SearchState.searching,
+    F.data == "match:continue",
+)
+async def continue_search(
     callback: CallbackQuery,
     session: AsyncSession,
     state: FSMContext,
@@ -86,16 +104,20 @@ async def like_candidate(
     if result.is_match and result.matched_user:
         notification_service = NotificationService(bot)
 
-        await notification_service.notify_both_on_match(
-            current_user,
-            result.matched_user,
-            result.common_interests,
+        await notification_service.notify_match(
+            user=result.matched_user,
+            matched_with=current_user,
+            common_interests=result.common_interests,
         )
 
-        await callback.answer(
-            "Это взаимная симпатия! 💖",
-            show_alert=True,
+        await show_match_success(
+            callback,
+            user=result.matched_user,
+            common_interests=result.common_interests,
         )
+
+        await callback.answer()
+        return
 
     await show_next_candidate(
         callback,
