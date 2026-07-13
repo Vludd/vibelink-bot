@@ -10,7 +10,7 @@ from typing import Any
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import CallbackQuery, Message
@@ -23,26 +23,12 @@ from app.bot.logger import setup_logger
 
 from app.bot.texts import ru as texts
 
-from app.bot.dependencies import build_container, build_engine, build_session_factory, check_database
+from app.bot.dependencies import build_engine, build_session_factory, check_database
 from app.bot.middlewares.db_session import DbSessionMiddleware
 
 logger = logging.getLogger(__name__)
 
-HANDLER_MODULES: tuple[str, ...] = (
-    "app.bot.handlers.start",
-    "app.bot.handlers.onboarding.goals",
-    "app.bot.handlers.onboarding.profile",
-    "app.bot.handlers.onboarding.interests",
-    "app.bot.handlers.onboarding.description",
-    "app.bot.handlers.onboarding.photo",
-    "app.bot.handlers.onboarding.privacy",
-    "app.bot.handlers.onboarding.preview",
-    "app.bot.handlers.search",
-    "app.bot.handlers.matching",
-    "app.bot.handlers.profile_menu",
-    "app.bot.handlers.settings",
-    "app.bot.handlers.moderation",
-)
+from app.bot.handlers import HANDLER_MODULES
 
 
 def _log_level() -> int:
@@ -135,10 +121,12 @@ def build_dev_router() -> Router:
             ),
         )
 
-    @router.callback_query(F.data == "menu:back")
-    @router.callback_query(F.data.startswith("menu:"))
-    @router.callback_query(F.data.startswith("card:"))
-    @router.callback_query(F.data.startswith("match:"))
+    @router.callback_query(
+        F.data.in_({
+            "menu:matches",
+            "menu:filters",
+        })
+    )
     
     async def dev_callback_stub(callback: CallbackQuery) -> None:
         await callback.answer(texts.ACTION_IN_DEV, show_alert=False)

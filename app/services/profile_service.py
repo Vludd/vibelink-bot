@@ -71,6 +71,12 @@ class ProfileService:
         return await self.user_repo.get_by_telegram_id(
             telegram_id, with_interests=with_interests
         )
+    
+    async def toggle_hidden(self, user: User) -> User:
+        return await self.user_repo.set_hidden(
+            user,
+            not user.is_hidden,
+        )
         
     async def bootstrap_profile(
         self,

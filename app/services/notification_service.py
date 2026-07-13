@@ -1,23 +1,29 @@
+from html import escape
 import logging
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter
+from aiogram.exceptions import (
+    TelegramBadRequest,
+    TelegramForbiddenError,
+    TelegramRetryAfter,
+)
 
 from app.db.models.user import User
 
 logger = logging.getLogger(__name__)
 
 _MATCH_TEXT = """\
-🎉 У тебя новый коннект!
+🎉 <b>У тебя новый коннект!</b>
 
-*{other_name}* тоже хочет пообщаться с тобой.
+<b>{other_name}</b> тоже хочет пообщаться с тобой.
 
-Общие интересы:
+<b>Общие интересы:</b>
 {interests}
 
-Можешь написать: @{username}
+💬 Можешь написать:
+@{username}
 
-_Удачи! 🤝_\
+<i>Удачи! 🤝</i>
 """
 
 _GREETING_HINT = (
@@ -28,8 +34,12 @@ _GREETING_HINT = (
 
 def _format_interests(names: list[str]) -> str:
     if not names:
-        return "- нет общих интересов"
-    return "\n".join(f"• {n}" for n in names[:5])  # cap at 5 to avoid wall of text
+        return "• нет общих интересов"
+
+    return "\n".join(
+        f"• {escape(name)}"
+        for name in names[:5]
+    )
 
 
 class NotificationService:
@@ -68,34 +78,43 @@ class NotificationService:
             return False
 
         text = _MATCH_TEXT.format(
-            other_name=matched_with.name or "Пользователь",
+            other_name = escape(matched_with.name or "Пользователь"),
             interests=_format_interests(common_interests),
-            username=matched_with.telegram_username,
+            username = escape(matched_with.telegram_username)
         )
 
         try:
             await self.bot.send_message(
                 chat_id=user.telegram_id,
                 text=text,
-                parse_mode="Markdown",
             )
             return True
         except TelegramForbiddenError:
             logger.info(
-                "notify_match: user tg_id=%s has blocked the bot", 
-                user.telegram_id
+                "notify_match: bot is blocked by tg_id=%s",
+                user.telegram_id,
             )
             return False
+
+        except TelegramBadRequest as e:
+            logger.debug(
+                "notify_match: tg_id=%s skipped: %s",
+                user.telegram_id,
+                e.message,
+            )
+            return False
+
         except TelegramRetryAfter as e:
             logger.warning(
-                "notify_match: flood control, retry after %ss", 
-                e.retry_after
+                "notify_match: retry after %ss",
+                e.retry_after,
             )
             return False
-        except Exception as e:
+
+        except Exception:
             logger.exception(
-                "notify_match: unexpected error for tg_id=%s: %s", 
-                user.telegram_id, e
+                "notify_match: unexpected error for tg_id=%s",
+                user.telegram_id,
             )
             return False
 

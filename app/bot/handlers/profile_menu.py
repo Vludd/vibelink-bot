@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.bot.keyboards.inline.profile import kb_main_menu, kb_profile_menu
 from app.bot.texts import ru as texts
 from app.bot.utils.messages import edit_callback_message
+from app.db.models.user import User
 from app.services.profile_service import ProfileService
 
 router = Router(name="profile_menu")
@@ -65,23 +66,73 @@ def format_search_scope(search_scope: Any) -> str:
     raw = enum_value(search_scope)
     return SEARCH_SCOPE_LABELS.get(raw, raw)
 
+async def get_profile(
+    session: AsyncSession,
+    telegram_id: int,
+    *,
+    with_interests: bool = False,
+):
+    return await ProfileService(session).get_by_telegram_id(
+        telegram_id,
+        with_interests=with_interests,
+    )
+
 
 @router.callback_query(F.data == "menu:back")
 async def back_to_main_menu(callback: CallbackQuery, session: AsyncSession) -> None:
-    profile_service = ProfileService(session)
-    user = await profile_service.get_by_telegram_id(callback.from_user.id)
+    user = await get_profile(
+        session,
+        callback.from_user.id,
+    )
 
     await edit_callback_message(
         callback,
         texts.MAIN_MENU,
         reply_markup=kb_main_menu(is_hidden=user.is_hidden if user else False),
     )
+    
+@router.callback_query(F.data == "menu:toggle_hidden")
+async def toggle_hidden_from_menu(
+    callback: CallbackQuery,
+    session: AsyncSession,
+) -> None:
+    profile_service = ProfileService(session)
+
+    user = await get_profile(
+        session,
+        callback.from_user.id,
+    )
+
+    if user is None:
+        await callback.answer(
+            texts.USER_IS_NOT_FOUND,
+            show_alert=True,
+        )
+        return
+
+    user = await profile_service.toggle_hidden(user)
+
+    message = (
+        "👁 Ваш профиль снова участвует в поиске."
+        if not user.is_hidden
+        else "🙈 Ваш профиль скрыт из поиска."
+    )
+
+    await edit_callback_message(
+        callback,
+        f"{message}\n\n{texts.MAIN_MENU}",
+        reply_markup=kb_main_menu(
+            is_hidden=user.is_hidden,
+        ),
+    )
+
+    await callback.answer()
 
 
 @router.callback_query(F.data == "menu:profile")
-async def show_profile(callback: CallbackQuery, session: AsyncSession) -> None:
-    profile_service = ProfileService(session)
-    user = await profile_service.get_by_telegram_id(
+async def show_profile(callback: CallbackQuery, session: AsyncSession) -> User | None:
+    user = await get_profile(
+        session,
         callback.from_user.id,
         with_interests=True,
     )

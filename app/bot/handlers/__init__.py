@@ -1,0 +1,15 @@
+HANDLER_MODULES: tuple[str, ...] = (
+    "app.bot.handlers.start",
+    "app.bot.handlers.onboarding.goals",
+    "app.bot.handlers.onboarding.profile",
+    "app.bot.handlers.onboarding.interests",
+    "app.bot.handlers.onboarding.description",
+    "app.bot.handlers.onboarding.photo",
+    "app.bot.handlers.onboarding.privacy",
+    "app.bot.handlers.onboarding.preview",
+    "app.bot.handlers.search",
+    "app.bot.handlers.matching",
+    "app.bot.handlers.profile_menu",
+    "app.bot.handlers.settings",
+    "app.bot.handlers.moderation",
+)
