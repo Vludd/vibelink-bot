@@ -49,7 +49,6 @@ def kb_profile_menu(is_hidden: bool = False, is_complete: bool = True) -> Inline
         ])
 
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="👁 Посмотреть анкету", callback_data="prof:view")],
         [InlineKeyboardButton(text="✏️ Редактировать", callback_data="prof:edit")],
         [InlineKeyboardButton(text=hidden_label, callback_data="prof:toggle_hidden")],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:back")],
