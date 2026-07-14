@@ -10,8 +10,11 @@ from app.bot.handlers.views import (
 )
 
 from app.bot.handlers.onboarding.common import get_current_user
+from app.bot.keyboards.inline.profile import kb_main_menu
 from app.bot.texts import ru as texts
 
+from app.bot.utils.messages import edit_callback_message
+from app.db.models.user import User
 from app.services.greeting_service import GreetingService
 from app.services.like_service import LikeService
 
@@ -176,3 +179,15 @@ async def connection_greeting(
     )
 
     await callback.answer()
+    
+async def show_main_menu(
+    callback: CallbackQuery,
+    user: User,
+) -> None:
+    await edit_callback_message(
+        callback,
+        texts.MAIN_MENU,
+        reply_markup=kb_main_menu(
+            is_hidden=user.is_hidden,
+        ),
+    )

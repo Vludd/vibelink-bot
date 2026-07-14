@@ -4,6 +4,7 @@ from aiogram.types import CallbackQuery
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.handlers.connections import show_main_menu
 from app.bot.handlers.onboarding.common import get_current_user
 from app.bot.states.search import SearchState
 from app.bot.texts import ru as texts
@@ -225,3 +226,35 @@ async def report_candidate(
     await callback.answer(
         texts.REPORT_SENT,
     )
+    
+@router.callback_query(
+    SearchState.searching,
+    F.data == "search:menu",
+)
+async def back_to_main_menu(
+    callback: CallbackQuery,
+    session: AsyncSession,
+    state: FSMContext,
+) -> None:
+    """Exit search and return to the main menu."""
+
+    await state.clear()
+
+    current_user = await get_current_user(
+        callback,
+        session,
+    )
+
+    if current_user is None:
+        await callback.answer(
+            texts.USER_IS_NOT_FOUND,
+            show_alert=True,
+        )
+        return
+
+    await show_main_menu(
+        callback,
+        current_user,
+    )
+
+    await callback.answer()
